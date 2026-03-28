@@ -201,6 +201,161 @@ h1 {
   100% { transform: scale(1);   opacity: 0.7; }
 }
 
+/* ─── Cat character ───────────────────────────────────────── */
+
+.cat-stage {
+  display: flex;
+  justify-content: center;
+  height: 100px;
+  align-items: flex-end;
+}
+
+.cat {
+  position: relative;
+  width: 76px;
+  height: 68px;
+  background: #e8923a;
+  border-radius: 50% 50% 44% 44% / 56% 56% 44% 44%;
+  animation: cat-idle 3s ease-in-out infinite;
+  cursor: default;
+  flex-shrink: 0;
+}
+
+/* Ears */
+.cat-ear {
+  position: absolute;
+  top: -20px;
+  width: 0; height: 0;
+  border-style: solid;
+  border-width: 0 13px 24px 13px;
+  border-color: transparent transparent #e8923a transparent;
+}
+.cat-ear.left  { left: 7px;  transform: rotate(-8deg); }
+.cat-ear.right { right: 7px; transform: rotate(8deg); }
+
+/* Inner ear */
+.cat-ear::after {
+  content: '';
+  position: absolute;
+  width: 0; height: 0;
+  border-style: solid;
+  border-width: 0 7px 14px 7px;
+  border-color: transparent transparent #f5c0a0 transparent;
+  top: 7px; left: -7px;
+}
+
+/* Eyes */
+.cat-eye {
+  position: absolute;
+  top: 22px;
+  width: 13px; height: 13px;
+  background: #1a1a2e;
+  border-radius: 50%;
+  transition: height 0.12s, border-radius 0.12s, top 0.12s;
+}
+.cat-eye.left  { left: 13px; }
+.cat-eye.right { right: 13px; }
+
+/* Eye shine */
+.cat-eye::after {
+  content: '';
+  position: absolute;
+  width: 4px; height: 4px;
+  background: #fff;
+  border-radius: 50%;
+  top: 2px; left: 3px;
+}
+
+/* Nose */
+.cat-nose {
+  position: absolute;
+  top: 39px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0; height: 0;
+  border-style: solid;
+  border-width: 0 5px 7px 5px;
+  border-color: transparent transparent #e05580 transparent;
+}
+
+/* Mouth */
+.cat-mouth {
+  position: absolute;
+  top: 46px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px; height: 6px;
+  border-bottom: 2px solid #c04468;
+  border-left: 2px solid #c04468;
+  border-right: 2px solid #c04468;
+  border-radius: 0 0 8px 8px;
+}
+
+/* Tail */
+.cat-tail {
+  position: absolute;
+  bottom: -38px;
+  right: -10px;
+  width: 14px; height: 44px;
+  background: #e8923a;
+  border-radius: 7px 7px 14px 14px;
+  transform-origin: top center;
+  animation: tail-sway 2.4s ease-in-out infinite;
+}
+
+/* ── Idle animations ── */
+@keyframes cat-idle {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-7px); }
+}
+
+@keyframes tail-sway {
+  0%, 100% { transform: rotate(-22deg); }
+  50%       { transform: rotate(22deg); }
+}
+
+/* ── Reaction bounce ── */
+.cat.reacting {
+  animation: cat-bounce 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97) !important;
+}
+
+@keyframes cat-bounce {
+  0%   { transform: translateY(0)   scale(1); }
+  35%  { transform: translateY(-22px) scale(1.12, 0.9); }
+  60%  { transform: translateY(-4px)  scale(0.95, 1.05); }
+  80%  { transform: translateY(-10px) scale(1.05, 0.95); }
+  100% { transform: translateY(0)   scale(1); }
+}
+
+/* ── Eye expressions per register ── */
+.cat[data-range="high"] .cat-eye {
+  height: 16px;
+  width: 16px;
+  top: 20px;
+}
+
+.cat[data-range="low"] .cat-eye {
+  height: 4px;
+  border-radius: 3px;
+  top: 26px;
+}
+
+/* ─── Paw particles ───────────────────────────────────────── */
+
+.paw-particle {
+  position: fixed;
+  font-size: 1.3rem;
+  pointer-events: none;
+  z-index: 999;
+  transform-origin: center;
+  animation: paw-float 0.7s ease-out forwards;
+}
+
+@keyframes paw-float {
+  0%   { transform: translateY(0)    scale(1)   rotate(0deg);           opacity: 1; }
+  100% { transform: translateY(-75px) scale(0.4) rotate(var(--rotate)); opacity: 0; }
+}
+
 /* ─── Footer ──────────────────────────────────────────────── */
 
 footer {

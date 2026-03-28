@@ -1,49 +1,47 @@
 import { KEY_MAP } from './modules/keyboardMap.js';
 import { renderPiano, highlightKey } from './modules/piano.js';
-import { initAudioContext, playNote, releaseSustain } from './modules/audioEngine.js';
-import { loadAllSounds } from './modules/catSounds.js';
+import { initAudio, setBuffer, playNote, releaseSustain } from './modules/audioEngine.js';
+import { loadCatSound } from './modules/catSounds.js';
+import { triggerReaction, spawnPaw } from './modules/catAnimation.js';
 
-const statusEl = document.getElementById('status');
+const statusEl      = document.getElementById('status');
 const currentNoteEl = document.getElementById('current-note');
-const pianoContainer = document.getElementById('piano');
+const pianoEl       = document.getElementById('piano');
 
-const pressedKeys = new Set();
-let isReady = false;
-let initPromise = null;
-let sustainActive = false;
+let ready   = false;
+let loading = false;
+let sustain = false;
+const held  = new Set();
 
-renderPiano(pianoContainer, handleNotePlay);
+// Piano rendern
+renderPiano(pianoEl, onNote);
 
-async function initAudio() {
-  if (isReady) return;
-  if (initPromise) return initPromise;
-
-  initPromise = (async () => {
-    try {
-      statusEl.textContent = 'Lade Sounds... (0/3)';
-      statusEl.className = 'status loading';
-
-      const ctx = initAudioContext();
-      await loadAllSounds(ctx, (loaded, total) => {
-        statusEl.textContent = `Lade Sounds... (${loaded}/${total})`;
-      });
-
-      isReady = true;
-      statusEl.textContent = 'Bereit! Spiel los!';
-      statusEl.className = 'status ready';
-    } catch (err) {
-      statusEl.textContent = 'Fehler: ' + err.message;
-      statusEl.className = 'status error';
-      console.error(err);
-    }
-  })();
-
-  return initPromise;
+// ── Audio-Init (einmalig beim ersten User-Gesture) ────────────
+async function startAudio() {
+  if (ready || loading) return;
+  loading = true;
+  statusEl.textContent = 'Lade Katzengeräusch...';
+  statusEl.className   = 'status loading';
+  try {
+    const audioCtx = initAudio();
+    const buffer   = await loadCatSound(audioCtx);
+    setBuffer(buffer);
+    ready = true;
+    statusEl.textContent = 'Bereit! Spiel los!';
+    statusEl.className   = 'status ready';
+  } catch (err) {
+    statusEl.textContent = 'Fehler: ' + err.message;
+    statusEl.className   = 'status error';
+    console.error(err);
+  } finally {
+    loading = false;
+  }
 }
 
-function handleNotePlay(note) {
-  if (!isReady) return;
-  playNote(note, sustainActive);
+// ── Note spielen ─────────────────────────────────────────────
+function onNote(note) {
+  if (!ready) return;
+  playNote(note.freq, sustain);
 
   currentNoteEl.textContent = note.note;
   currentNoteEl.classList.remove('pop');
@@ -52,57 +50,56 @@ function handleNotePlay(note) {
 
   highlightKey(note.note, true);
   setTimeout(() => highlightKey(note.note, false), 180);
+
+  // Katzen-Animation
+  const range = note.freq < 415 ? 'low' : note.freq < 659 ? 'mid' : 'high';
+  triggerReaction(range);
+  spawnPaw(note.note);
 }
 
-// Tastatur
+// ── Tastatur ─────────────────────────────────────────────────
 document.addEventListener('keydown', async (e) => {
   if (e.repeat) return;
 
-  // Leertaste = Sustain-Pedal
   if (e.code === 'Space') {
     e.preventDefault();
-    if (!sustainActive) {
-      sustainActive = true;
-      document.getElementById('sustain-indicator')?.classList.add('active');
-    }
+    sustain = true;
+    document.getElementById('sustain-indicator')?.classList.add('active');
     return;
   }
 
-  if (!isReady) await initAudio();
+  if (!ready) await startAudio();
 
-  const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
-  const note = KEY_MAP[key];
-
-  if (note && !pressedKeys.has(key)) {
-    pressedKeys.add(key);
-    handleNotePlay(note);
+  const k    = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+  const note = KEY_MAP[k];
+  if (note && !held.has(k)) {
+    held.add(k);
+    onNote(note);
   }
 });
 
 document.addEventListener('keyup', (e) => {
   if (e.code === 'Space') {
-    sustainActive = false;
+    sustain = false;
     document.getElementById('sustain-indicator')?.classList.remove('active');
     releaseSustain();
     return;
   }
-  pressedKeys.delete(e.key.length === 1 ? e.key.toLowerCase() : e.key);
+  held.delete(e.key.length === 1 ? e.key.toLowerCase() : e.key);
 });
 
-// Maus-Init
-document.addEventListener('mousedown', () => {
-  if (!isReady) initAudio();
-}, { once: true });
-
-// Slide über Tasten
+// ── Maus ─────────────────────────────────────────────────────
 let mouseDown = false;
-document.addEventListener('mousedown', () => { mouseDown = true; });
+document.addEventListener('mousedown', async () => {
+  mouseDown = true;
+  if (!ready) await startAudio();
+});
 document.addEventListener('mouseup', () => { mouseDown = false; });
 
-pianoContainer.addEventListener('mouseover', (e) => {
-  if (!mouseDown || !isReady) return;
-  const keyEl = e.target.closest('.piano-key');
-  if (!keyEl) return;
-  const note = Object.values(KEY_MAP).find(n => n.note === keyEl.dataset.note);
-  if (note) handleNotePlay(note);
+pianoEl.addEventListener('mouseover', (e) => {
+  if (!mouseDown || !ready) return;
+  const el = e.target.closest('.piano-key');
+  if (!el) return;
+  const note = Object.values(KEY_MAP).find(n => n.note === el.dataset.note);
+  if (note) onNote(note);
 });

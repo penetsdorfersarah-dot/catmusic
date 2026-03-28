@@ -10,7 +10,7 @@ const elevenlabs = new ElevenLabsClient({ apiKey: process.env.ELEVENLABS_API_KEY
 
 let cachedAudio = null;
 
-app.use(express.static(path.join(__dirname, '..')));
+app.use(express.static(__dirname));
 
 app.get('/api/cat-sound', async (req, res) => {
   if (!process.env.ELEVENLABS_API_KEY) {
