@@ -1,8 +1,6 @@
 {
   "functions": {
-    "api/cat-sound.js": {
-      "maxDuration": 30
-    }
-  },
-  "ignoreCommand": "echo skip"
+    "api/cat-sound.js": { "maxDuration": 30 },
+    "api/cat-sound/[range].js": { "maxDuration": 30 }
+  }
 }
