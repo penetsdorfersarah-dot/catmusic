@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catmusic</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>Catmusic</h1>
+      <p class="subtitle">Spiel Klavier — hör Katzen</p>
+      <div id="status" class="status idle">Klick eine Taste zum Starten</div>
+    </header>
+
+    <main>
+      <div id="piano"></div>
+      <div id="current-note" aria-live="polite"></div>
+      <div id="sustain-indicator" class="sustain-indicator">Sustain</div>
+    </main>
+
+    <footer>
+      <div class="key-guide">
+        <span><strong>Weiße Tasten:</strong> A S D F G H J K L ; ' Z X C V</span>
+        <span><strong>Schwarze Tasten:</strong> W E T Y U O P [ ] \</span>
+        <span><strong>Sustain-Pedal:</strong> Leertaste halten</span>
+      </div>
+    </footer>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
